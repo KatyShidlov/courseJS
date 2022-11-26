@@ -163,15 +163,15 @@ window.addEventListener('DOMContentLoaded', () => {
             this.transfer = 61;
             this.changeToRUB();
         }
-    
+
         changeToRUB() {
             this.price = this.price * this.transfer;
         }
-    
+
         render() {
             const element = document.createElement('div');
 
-            if(this.classes.length === 0) {
+            if (this.classes.length === 0) {
                 this.classes = 'menu__item';
                 element.classList.add(this.classes);
             } else {
@@ -191,7 +191,7 @@ window.addEventListener('DOMContentLoaded', () => {
             this.parent.append(element);
         }
     }
-    
+
     new MenuCard(
         "img/tabs/vegy.jpg",
         "vegy",
@@ -222,7 +222,52 @@ window.addEventListener('DOMContentLoaded', () => {
         'menu__item'
     ).render();
 
+    // Forms
+
+    const forms = document.querySelectorAll('form');
+
+    const message = {
+        loading: 'Загрузка!',
+        success: 'Мы свяжемся с вами!',
+        failure: 'Что-то пошло не так...'
+    };
+
+    forms.forEach(item => {
+        postData(item);
+    });
+
+    function postData(form) {
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const statusMessage = document.createElement('div');
+            statusMessage.classList.add('status');
+            statusMessage.textContent = message.loading;
+            form.append(statusMessage);
+
+            const request = new XMLHttpRequest();
+            request.open('POST', 'server.php');
+
+            const formData = new FormData(form);
+
+            request.send(formData);
+
+            request.addEventListener('load', () => {
+                if (request.status === 200) {
+                    console.log(request.response);
+                    statusMessage.textContent = message.success;
+                } else {
+                    statusMessage.textContent = message.failure;
+                }
+            });
+        });
+    }
+
 });
+
+
+
 
 
 
