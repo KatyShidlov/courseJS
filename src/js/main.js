@@ -54,9 +54,9 @@ window.addEventListener('DOMContentLoaded', () => {
             seconds = 0;
         } else {
             days = Math.floor(t / (1000 * 60 * 60 * 24)),
-                hours = Math.floor((t / (1000 * 60 * 60) % 24)),
-                minutes = Math.floor((t / (1000 * 60) % 60)),
-                seconds = Math.floor((t / 1000) % 60);
+            hours = Math.floor((t / (1000 * 60 * 60) % 24)),
+            minutes = Math.floor((t / (1000 * 60) % 60)),
+            seconds = Math.floor((t / 1000) % 60);
         }
 
         return {
@@ -249,9 +249,16 @@ window.addEventListener('DOMContentLoaded', () => {
             const request = new XMLHttpRequest();
             request.open('POST', 'server.php');
 
-            const formData = new FormData(form);
+            request.setRequestHeader('Content-type', 'application/JSON');
 
-            request.send(formData);
+            const formData = new FormData(form);
+            const object = {};
+            formData.forEach(function(value, key) {
+                object[key] = value;
+            });
+            const json = JSON.stringify(object);
+
+            request.send(json);
 
             request.addEventListener('load', () => {
                 if (request.status === 200) {
