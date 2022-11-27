@@ -285,19 +285,16 @@ window.addEventListener('DOMContentLoaded', () => {
             `;
       form.insertAdjacentElement('afterend', statusMessage);
       const formData = new FormData(form);
-
-      // const object = {};
-      // formData.forEach(function(value, key) {
-      //     object[key] = value;
-      // });
-      // const json = JSON.stringify(object);
-
+      const object = {};
+      formData.forEach(function (value, key) {
+        object[key] = value;
+      });
       fetch('server.php', {
         method: 'POST',
-        // headers: {
-        //     'Content-type': 'application/JSON'
-        // },
-        body: formData
+        headers: {
+          'Content-type': 'application/JSON'
+        },
+        body: JSON.stringify(object)
       }).then(data => data.text()).then(data => {
         console.log(data);
         showThanksModal(message.success);
