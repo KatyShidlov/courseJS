@@ -56,9 +56,9 @@ window.addEventListener('DOMContentLoaded', () => {
             seconds = 0;
         } else {
             days = Math.floor(t / (1000 * 60 * 60 * 24)),
-            hours = Math.floor((t / (1000 * 60 * 60) % 24)),
-            minutes = Math.floor((t / (1000 * 60) % 60)),
-            seconds = Math.floor((t / 1000) % 60);
+                hours = Math.floor((t / (1000 * 60 * 60) % 24)),
+                minutes = Math.floor((t / (1000 * 60) % 60)),
+                seconds = Math.floor((t / 1000) % 60);
         }
 
         return {
@@ -202,13 +202,13 @@ window.addEventListener('DOMContentLoaded', () => {
     };
 
     getResource('http://localhost:3000/menu')
-    .then(data => {
-        data.forEach(({img, altimg, title, descr, price}) => {
-            const toRub = 60;
-            price = price * toRub;
-            new MenuCard(img, altimg, title, descr, price, '.menu .container').render();
+        .then(data => {
+            data.forEach(({ img, altimg, title, descr, price }) => {
+                const toRub = 60;
+                price = price * toRub;
+                new MenuCard(img, altimg, title, descr, price, '.menu .container').render();
+            });
         });
-    });
 
     //another variant to create cards
 
@@ -278,15 +278,15 @@ window.addEventListener('DOMContentLoaded', () => {
             const json = JSON.stringify(Object.fromEntries(formData.entries()));
 
             postData('http://localhost:3000/requests', json)
-            .then(data => {
-                console.log(data);
-                showThanksModal(message.success);
-                statusMessage.remove();
-            }).catch(() => {
-                showThanksModal(message.failure);
-            }).finally(() => {
-                form.reset();
-            });
+                .then(data => {
+                    console.log(data);
+                    showThanksModal(message.success);
+                    statusMessage.remove();
+                }).catch(() => {
+                    showThanksModal(message.failure);
+                }).finally(() => {
+                    form.reset();
+                });
         });
     }
 
@@ -320,14 +320,16 @@ window.addEventListener('DOMContentLoaded', () => {
     let slideIndex = 1;
     let offset = 0;
     const slides = document.querySelectorAll('.offer__slide'),
-          prev = document.querySelector('.offer__slider-prev'),
-          next = document.querySelector('.offer__slider-next'),
-          total = document.querySelector('#total'),
-          current = document.querySelector('#current'),
-          slidesWrapper = document.querySelector('.offer__slider-wrapper'),
-          slidesField = document.querySelector('.offer__slider-inner'),
-          width = window.getComputedStyle(slidesWrapper).width;
+        slider = document.querySelector('.offer__slider'),
+        prev = document.querySelector('.offer__slider-prev'),
+        next = document.querySelector('.offer__slider-next'),
+        total = document.querySelector('#total'),
+        current = document.querySelector('#current'),
+        slidesWrapper = document.querySelector('.offer__slider-wrapper'),
+        slidesField = document.querySelector('.offer__slider-inner'),
+        width = window.getComputedStyle(slidesWrapper).width;
 
+    slider.style.position = 'relative';
 
     slidesField.style.width = 100 * slides.length + '%';
     slidesField.style.display = 'flex';
@@ -347,9 +349,69 @@ window.addEventListener('DOMContentLoaded', () => {
         current.textContent = slideIndex;
     }
 
-    next.addEventListener('click', () => {
+    let dots = [];
+
+    const indicators = document.createElement('ol');
+    indicators.classList.add('carousel-indicators');
+
+    indicators.style.cssText = `
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 15;
+        display: flex;
+        justify-content: center;
+        margin-right: 15%;
+        margin-left: 15%;
+        list-style: none;
+    `;
+    slider.append(indicators);
+
+    for (let i = 0; i < slides.length; i++) {
+        const dot = document.createElement('li');
+        dot.setAttribute('data-slide-to', i + 1);
+        dot.style.cssText = `
+            box-sizing: content-box;
+            flex: 0 1 auto;
+            width: 30px;
+            height: 6px;
+            margin-right: 3px;
+            margin-left: 3px;
+            cursor: pointer;
+            background-color: #fff;
+            background-clip: padding-box;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+            opacity: .5;
+            transition: opacity .6s ease;
+        `;
         
-        if (offset == (+width.slice(0, width.length - 2) * (slides.length - 1))){ //width.length - 2 - убираем px
+        if (i == 0) {
+            dot.style.opacity = 1;
+        }
+       
+        indicators.append(dot);
+
+        dots.push(dot);
+    }
+
+    function activeDot() {
+        dots.forEach(dot => dot.style.opacity = '.5');
+        dots[slideIndex -1].style.opacity = '1';
+    }
+
+    function changeCurrent() {
+        if (slides.length < 10) {
+            current.textContent = `0${slideIndex}`;
+        } else {
+            current.textContent = slideIndex;
+        }
+    }
+
+    next.addEventListener('click', () => {
+
+        if (offset == (+width.slice(0, width.length - 2) * (slides.length - 1))) { //width.length - 2 - убираем px
             offset = 0;
         } else {
             offset += +width.slice(0, width.length - 2);
@@ -362,16 +424,13 @@ window.addEventListener('DOMContentLoaded', () => {
         } else {
             slideIndex++;
         }
-        if (slides.length < 10) {
-            current.textContent =  `0${slideIndex}`;
-        } else {
-            current.textContent =  slideIndex;
-        }
+        changeCurrent();
+        activeDot();
     });
 
     prev.addEventListener('click', () => {
 
-        if (offset == 0){ 
+        if (offset == 0) {
             offset = (+width.slice(0, width.length - 2) * (slides.length - 1));
         } else {
             offset -= +width.slice(0, width.length - 2);
@@ -384,12 +443,26 @@ window.addEventListener('DOMContentLoaded', () => {
         } else {
             slideIndex--;
         }
-        if (slides.length < 10) {
-            current.textContent =  `0${slideIndex}`;
-        } else {
-            current.textContent =  slideIndex;
-        }
+        
+        changeCurrent();
+        activeDot();
 
+    });
+
+    dots.forEach(dot => {
+        dot.addEventListener('click', (e) => {
+            const slideTo = e.target.getAttribute('data-slide-to');
+
+            slideIndex = slideTo;
+
+            offset = (+width.slice(0, width.length - 2) * (slideTo - 1));
+
+            slidesField.style.transform = `translateX(-${offset}px)`;
+
+            changeCurrent();
+            activeDot();
+
+        });
     });
 
     //another variant of slider (not so cool but easy):
@@ -403,7 +476,7 @@ window.addEventListener('DOMContentLoaded', () => {
     // }
 
     // function showSlides(n) {
-        
+
     //     if (n > slides.length) {
     //         slideIndex = 1;
     //     }
